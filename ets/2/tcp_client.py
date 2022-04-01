@@ -36,7 +36,7 @@ def make_secure_socket(destination_address='localhost', port=10000):
         sock.connect(server_address)
         secure_socket = context.wrap_socket(
             sock, server_hostname=destination_address)
-        logging.warning(secure_socket.getpeercert())
+        # logging.warning(secure_socket.getpeercert())
         return secure_socket
     except Exception as ee:
         logging.warning(f"error {str(ee)}")
@@ -80,7 +80,7 @@ def send_command(command_str, is_secure=False):
         # logging.warning("data received from server:")
         return hasil
     except Exception as ee:
-        logging.warning(f"error during data receiving {str(ee)}")
+        # logging.warning(f"error during data receiving {str(ee)}")
         return False
 
 
@@ -123,4 +123,4 @@ def request_multithread(total_request):
 
 
 if __name__ == '__main__':
-    request_multithread(20)
+    request_multithread(10)

@@ -4,6 +4,7 @@ import logging
 import json
 import os
 import ssl
+import threading
 
 alldata = dict()
 alldata['1'] = dict(nomor=1, nama="Pemain Bola 1", posisi="Posisi 1")
@@ -86,6 +87,9 @@ def run_server(server_address, is_secure=False):
     # Listen for incoming connections
     sock.listen(1000)
 
+    threads = dict()
+    thread_index = 0
+
     while True:
         # Wait for a connection
         logging.warning("waiting for a connection")
@@ -100,45 +104,41 @@ def run_server(server_address, is_secure=False):
             else:
                 connection = koneksi
 
-            selesai = False
-            data_received = ""  # string
-            while True:
-                data = connection.recv(32)
-                logging.warning(f"received {data}")
-                if data:
-                    data_received += data.decode()
-                    if "\r\n\r\n" in data_received:
-                        selesai = True
+            threads[thread_index] = threading.Thread(
+                target=send_data, args=(client_address, connection))
+            threads[thread_index].start()
+            thread_index += 1
 
-                    if (selesai == True):
-                        hasil = proses_request(data_received)
-                        logging.warning(f"hasil proses: {hasil}")
-
-                        # hasil bisa berupa tipe dictionary
-                        # harus diserialisasi dulu sebelum dikirim via network
-                        # Send data
-                        # some data structure may have complex structure
-                        # how to send such data structure through the network ?
-                        # use serialization
-                        #  example : json, xml
-
-                        # complex structure, nested dict
-                        # all data that will be sent through network has to be encoded into bytes type"
-                        # in this case, the message (type: string) will be encoded to bytes by calling encode
-
-                        hasil = serialisasi(hasil)
-                        hasil += "\r\n\r\n"
-                        connection.sendall(hasil.encode())
-                        selesai = False
-                        data_received = ""  # string
-                        break
-
-                else:
-                    logging.warning(f"no more data from {client_address}")
-                    break
             # Clean up the connection
         except ssl.SSLError as error_ssl:
             logging.warning(f"SSL error: {str(error_ssl)}")
+
+
+def send_data(client_address, connection):
+    selesai = False
+    data_received = ""  # string
+    while True:
+        data = connection.recv(32)
+        logging.warning(f"received {data}")
+        if data:
+            data_received += data.decode()
+            if "\r\n\r\n" in data_received:
+                selesai = True
+
+            if (selesai == True):
+                hasil = proses_request(data_received)
+                logging.warning(f"hasil proses: {hasil}")
+
+                hasil = serialisasi(hasil)
+                hasil += "\r\n\r\n"
+                connection.sendall(hasil.encode())
+                selesai = False
+                data_received = ""  # string
+                break
+
+        else:
+            logging.warning(f"no more data from {client_address}")
+            break
 
 
 if __name__ == '__main__':

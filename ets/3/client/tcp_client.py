@@ -36,7 +36,7 @@ def make_secure_socket(destination_address='localhost', port=10000):
         sock.connect(server_address)
         secure_socket = context.wrap_socket(
             sock, server_hostname=destination_address)
-        logging.warning(secure_socket.getpeercert())
+        # logging.warning(secure_socket.getpeercert())
         return secure_socket
     except Exception as ee:
         logging.warning(f"error {str(ee)}")
@@ -111,7 +111,7 @@ def request_multithread(total_request):
     for k in range(total_request):
         number = k + 1
         texec[k] = threading.Thread(
-            target=getdatapemain, args=(random.randint(1, 20),))
+            target=getdatapemain, args=(random.randint(1, 20), True))
         texec[k].start()
 
     for k in range(total_request):
