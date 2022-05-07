@@ -33,12 +33,6 @@ class FileInterface:
             if (filename == ''):
                 return None
 
-            print(f"===== files/{filename}")
-            print(os.path.exists(f"files/{filename}"))
-
-            print(f"===== {filename}")
-            print(os.path.exists(f"{filename}"))
-
             if os.path.exists(f"{filename}"):
                 return dict(status='ERROR', data=f"File {filename} sudah ada pada server")
 
@@ -49,6 +43,20 @@ class FileInterface:
             fp.close()
 
             return dict(status='OK', data="File berhasil ditambahkan")
+
+        except Exception as e:
+            return dict(status='ERROR', data=str(e))
+
+    def delete(self, params=[]):
+        try:
+            filename = params[0]
+
+            if not os.path.exists(filename):
+                return dict(status='ERROR', data=f"File {filename} tidak ada pada server")
+
+            os.remove(filename)
+
+            return dict(status='OK', data=f"File {filename} berhasil dihapus")
 
         except Exception as e:
             return dict(status='ERROR', data=str(e))
